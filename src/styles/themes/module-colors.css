@@ -1,0 +1,73 @@
+/* Cores segmentadas por módulo - Paleta Suave e Elegante */
+
+/* Home/Neutral - Base */
+.theme-home {
+  --primary: 215 14% 34%; /* slate-600 */
+  --primary-foreground: 210 40% 98%;
+  --accent: 215 14% 34%;
+  --accent-foreground: 210 40% 98%;
+  --border: 215 13% 91%;
+  --ring: 215 14% 34%;
+}
+
+/* JSON Validator - Azul Suave */
+.theme-json {
+  --primary: 199 89% 48%; /* sky-500 */
+  --primary-foreground: 210 40% 98%;
+  --accent: 199 89% 48%;
+  --accent-foreground: 210 40% 98%;
+  --border: 199 50% 90%;
+  --ring: 199 89% 48%;
+}
+
+/* CSV Validator - Verde Suave */
+.theme-csv {
+  --primary: 160 84% 39%; /* emerald-600 */
+  --primary-foreground: 210 40% 98%;
+  --accent: 160 84% 39%;
+  --accent-foreground: 210 40% 98%;
+  --border: 160 50% 90%;
+  --ring: 160 84% 39%;
+}
+
+/* JWT Decoder - Roxo Suave */
+.theme-jwt {
+  --primary: 250 95% 60%; /* indigo-500 */
+  --primary-foreground: 210 40% 98%;
+  --accent: 250 95% 60%;
+  --accent-foreground: 210 40% 98%;
+  --border: 250 50% 90%;
+  --ring: 250 95% 60%;
+}
+
+/* Regex Tester - Coral Suave */
+.theme-regex {
+  --primary: 16 94% 57%; /* rose-500 */
+  --primary-foreground: 210 40% 98%;
+  --accent: 16 94% 57%;
+  --accent-foreground: 210 40% 98%;
+  --border: 16 50% 90%;
+  --ring: 16 94% 57%;
+}
+
+/* Mock Generator - Rosa Suave */
+.theme-mock {
+  --primary: 330 81% 60%; /* pink-500 */
+  --primary-foreground: 210 40% 98%;
+  --accent: 330 81% 60%;
+  --accent-foreground: 210 40% 98%;
+  --border: 330 50% 90%;
+  --ring: 330 81% 60%;
+}
+
+/* SVG Converter - Teal Suave */
+.theme-svg {
+  --primary: 173 80% 36%; /* teal-600 */
+  --primary-foreground: 210 40% 98%;
+  --accent: 173 80% 36%;
+  --accent-foreground: 210 40% 98%;
+  --border: 173 50% 90%;
+  --ring: 173 80% 36%;
+}
+
+ 
