@@ -1,4 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { RobotSkinRenderer } from './RobotSkins';
+import type { RobotSkin } from './RobotSkins';
 
 interface RobotGameProps {
   isVisible: boolean;
@@ -13,11 +16,15 @@ interface RobotState {
   isWalking: boolean;
   direction: 1 | -1;
   targetElement: string | null;
-  mood: 'happy' | 'curious' | 'excited' | 'thinking' | 'sleepy';
+  mood: 'happy' | 'curious' | 'excited' | 'thinking' | 'sleepy' | 'error' | 'success';
   energy: number;
   lastAction: number;
   idleTimer: number;
   currentAnimation: string;
+  skin: RobotSkin;
+  showTooltip: boolean;
+  tooltipText: string;
+  tooltipTimer: number;
 }
 
 const ROBOT_SIZE = 80;
@@ -45,8 +52,60 @@ export function RobotGame({ isVisible }: RobotGameProps) {
     energy: MAX_ENERGY,
     lastAction: Date.now(),
     idleTimer: 0,
-    currentAnimation: 'idle'
+    currentAnimation: 'idle',
+    skin: 'stray-drone',
+    showTooltip: false,
+    tooltipText: '',
+    tooltipTimer: 0
   });
+
+  // Função para mostrar tooltip
+  const showTooltip = useCallback((text: string, duration: number = 3000) => {
+    setRobot(prev => ({
+      ...prev,
+      showTooltip: true,
+      tooltipText: text,
+      tooltipTimer: Date.now() + duration
+    }));
+  }, []);
+
+  // Função para detectar eventos da página
+  const detectPageEvents = useCallback(() => {
+    // Detectar erros de validação
+    const errorElements = document.querySelectorAll('.error, .invalid, [data-error="true"]');
+    if (errorElements.length > 0) {
+      setRobot(prev => ({
+        ...prev,
+        mood: 'error',
+        currentAnimation: 'error'
+      }));
+      showTooltip('Ops! Encontrei alguns erros na página! 💥');
+      return;
+    }
+
+    // Detectar sucessos
+    const successElements = document.querySelectorAll('.success, .valid, [data-success="true"]');
+    if (successElements.length > 0) {
+      setRobot(prev => ({
+        ...prev,
+        mood: 'success',
+        currentAnimation: 'success'
+      }));
+      showTooltip('Perfeito! Tudo funcionando! ✨');
+      return;
+    }
+
+    // Detectar formulários preenchidos
+    const filledInputs = document.querySelectorAll('input[value]:not([value=""]), textarea:not(:empty)');
+    if (filledInputs.length > 0) {
+      setRobot(prev => ({
+        ...prev,
+        mood: 'curious',
+        currentAnimation: 'walk'
+      }));
+      showTooltip('Vejo que você está trabalhando! 🤔');
+    }
+  }, [showTooltip]);
 
   // Função para pular
   const jump = useCallback(() => {
@@ -230,6 +289,9 @@ export function RobotGame({ isVisible }: RobotGameProps) {
         newRobot.isJumping = false;
       }
 
+      // Detectar eventos da página
+      detectPageEvents();
+
       // Comportamento autônomo
       newRobot = autonomousBehavior(newRobot);
 
@@ -336,111 +398,36 @@ export function RobotGame({ isVisible }: RobotGameProps) {
 
   if (!isVisible) return null;
 
-  // Expressões do robô baseadas no humor
-  const getRobotExpression = () => {
-    switch (robot.mood) {
-      case 'happy':
-        return '😊';
-      case 'curious':
-        return '🤔';
-      case 'excited':
-        return '🤖';
-      case 'thinking':
-        return '🧠';
-      case 'sleepy':
-        return '😴';
-      default:
-        return '🤖';
-    }
-  };
-
-  // Cor do robô baseada na energia
-  const getRobotColor = () => {
-    const energyLevel = robot.energy / MAX_ENERGY;
-    if (energyLevel > 0.7) return 'bg-blue-500';
-    if (energyLevel > 0.4) return 'bg-blue-400';
-    if (energyLevel > 0.2) return 'bg-blue-300';
-    return 'bg-gray-400';
-  };
-
   return (
-    <div
+    <motion.div
       ref={robotRef}
       className="fixed z-50 pointer-events-none select-none"
       style={{
         left: `${robot.x}px`,
         top: `${robot.y}px`,
         transform: `scaleX(${robot.direction})`,
-        transition: 'transform 0.2s ease'
       }}
+      animate={robot.currentAnimation === 'error' ? { x: [-5, 5, -5, 5, 0] } : {}}
+      transition={{ duration: 0.3 }}
     >
-      {/* Robô */}
-      <div className="relative">
-        {/* Corpo principal */}
-        <div className={`w-20 h-20 ${getRobotColor()} rounded-lg relative shadow-lg border-2 border-gray-300`}>
-          {/* Cabeça */}
-          <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-gray-200 rounded-full border-2 border-gray-400 flex items-center justify-center">
-            {/* Expressão */}
-            <div className="text-2xl animate-pulse">
-              {getRobotExpression()}
-            </div>
-          </div>
-          
-          {/* Olhos */}
-          <div className="absolute top-2 left-2 w-3 h-3 bg-yellow-400 rounded-full animate-pulse">
-            <div className="absolute top-0.5 left-0.5 w-1 h-1 bg-black rounded-full"></div>
-          </div>
-          <div className="absolute top-2 right-2 w-3 h-3 bg-yellow-400 rounded-full animate-pulse">
-            <div className="absolute top-0.5 right-0.5 w-1 h-1 bg-black rounded-full"></div>
-          </div>
-          
-          {/* Antenas */}
-          <div className="absolute -top-6 left-4 w-1 h-4 bg-gray-400 rounded-full">
-            <div className="absolute -top-1 left-0 w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
-          </div>
-          <div className="absolute -top-6 right-4 w-1 h-4 bg-gray-400 rounded-full">
-            <div className="absolute -top-1 right-0 w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
-          </div>
-          
-          {/* Braços */}
-          <div className={`absolute top-4 -left-2 w-2 h-6 ${getRobotColor()} rounded-full ${
-            robot.isWalking ? 'animate-bounce' : ''
-          }`} style={{ animationDelay: '0ms' }}></div>
-          <div className={`absolute top-4 -right-2 w-2 h-6 ${getRobotColor()} rounded-full ${
-            robot.isWalking ? 'animate-bounce' : ''
-          }`} style={{ animationDelay: '150ms' }}></div>
-          
-          {/* Pernas */}
-          <div className={`absolute -bottom-2 left-3 w-2 h-4 ${getRobotColor()} rounded-full ${
-            robot.isWalking ? 'animate-bounce' : ''
-          }`} style={{ animationDelay: '0ms' }}></div>
-          <div className={`absolute -bottom-2 right-3 w-2 h-4 ${getRobotColor()} rounded-full ${
-            robot.isWalking ? 'animate-bounce' : ''
-          }`} style={{ animationDelay: '150ms' }}></div>
-          
-          {/* Barriga */}
-          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-2 bg-gray-300 rounded-full"></div>
-        </div>
-        
-        {/* Sombra */}
-        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-12 h-2 bg-black opacity-20 rounded-full"></div>
-        
-        {/* Barra de energia */}
-        <div className="absolute -top-2 left-0 right-0 bg-gray-200 rounded-full h-1">
-          <div 
-            className="bg-green-500 h-1 rounded-full transition-all duration-300"
-            style={{ width: `${(robot.energy / MAX_ENERGY) * 100}%` }}
-          ></div>
-        </div>
-        
-        {/* Balão de fala */}
-        {robot.mood === 'curious' && (
-          <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-white border-2 border-gray-300 rounded-lg px-2 py-1 text-xs whitespace-nowrap">
-            O que é isso? 🤔
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-300"></div>
-          </div>
-        )}
-      </div>
-    </div>
+      <RobotSkinRenderer
+        skin={robot.skin}
+        mood={robot.mood}
+        isWalking={robot.isWalking}
+        isJumping={robot.isJumping}
+        energy={robot.energy}
+        maxEnergy={MAX_ENERGY}
+        showTooltip={robot.showTooltip}
+        tooltipText={robot.tooltipText}
+        onAnimationComplete={() => {
+          if (robot.currentAnimation === 'error' || robot.currentAnimation === 'success') {
+            setRobot(prev => ({
+              ...prev,
+              currentAnimation: 'idle'
+            }));
+          }
+        }}
+      />
+    </motion.div>
   );
 }
