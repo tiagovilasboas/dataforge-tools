@@ -1,0 +1,241 @@
+# Cursor Rules - DataForge Tools
+
+## Estrutura de Módulos
+Sempre que criar um novo módulo em `src/features/`, siga este padrão:
+
+### 1. Separação de Responsabilidades (SRP)
+- **schema.ts**: Defina schemas de validação usando Zod
+- **useFeature.ts**: Hook customizado para lógica de estado e validação
+- **Feature.tsx**: Componente principal responsável apenas pela UI
+
+### 2. Boas Práticas Obrigatórias
+- ✅ Use tipagem explícita, evite `any`
+- ✅ Trate erros com `instanceof ZodError` para validações Zod
+- ✅ Separe lógica de negócio da UI
+- ✅ Use hooks customizados para estado complexo
+- ✅ Mantenha componentes pequenos e focados
+
+### 3. Estrutura de Arquivos
+```
+src/features/nome-do-modulo/
+├── schema.ts          # Schemas Zod
+├── useFeature.ts      # Hook de lógica
+└── Feature.tsx        # Componente UI
+```
+
+### 4. Padrões de Código
+- Importe schemas: `import { featureSchema } from "./schema"`
+- Use hooks: `const { state, actions } = useFeature()`
+- Trate erros: `if (e instanceof ZodError) { ... }`
+- Componente limpo: apenas UI e interação
+
+### 5. Exemplo de Hook
+```typescript
+export function useFeature() {
+  const [input, setInput] = useState("");
+  const [errors, setErrors] = useState<string[]>([]);
+  const [valid, setValid] = useState(false);
+
+  const validate = () => {
+    try {
+      const parsed = JSON.parse(input);
+      featureSchema.parse(parsed);
+      setValid(true);
+      setErrors([]);
+    } catch (e) {
+      if (e instanceof ZodError) {
+        setErrors(e.errors.map((err) => `${err.path.join(".")} → ${err.message}`));
+      }
+    }
+  };
+
+  return { input, setInput, errors, valid, validate };
+}
+```
+
+### 6. Tecnologias do Projeto
+- React + TypeScript
+- Vite
+- Tailwind CSS
+- Shadcn UI
+- Zod para validação
+- React Router para navegação
+- next-themes para tema
+
+### 7. Import Alias
+Use sempre: `@/components/ui/...` para componentes Shadcn 
+
+## Boas Práticas de Refatoração e Estrutura
+
+### 8. Extração de Componentes
+- ✅ **Extraia componentes pequenos e focados** para reduzir complexidade
+- ✅ **Use early returns** para reduzir aninhamento de `if`
+- ✅ **Separe lógica em componentes menores** seguindo SRP
+- ✅ **Use objetos de configuração** ao invés de arrays com `.map`
+
+### 9. Padrões de Componentes
+```typescript
+// ❌ EVITE: Componente monolítico com muitos ifs
+export function Feature() {
+  // ... 200+ linhas com muitos ifs aninhados
+}
+
+// ✅ PREFIRA: Componentes extraídos e focados
+function FeatureHeader() { /* ... */ }
+function FeatureInput() { /* ... */ }
+function FeatureOutput() { /* ... */ }
+function FeatureErrors() { /* ... */ }
+
+export function Feature() {
+  return (
+    <div>
+      <FeatureHeader />
+      <FeatureInput />
+      <FeatureOutput />
+      <FeatureErrors />
+    </div>
+  );
+}
+```
+
+### 10. Early Returns e Redução de Aninhamento
+```typescript
+// ❌ EVITE: Aninhamento profundo
+function Component() {
+  if (condition1) {
+    if (condition2) {
+      if (condition3) {
+        return <div>...</div>;
+      }
+    }
+  }
+  return null;
+}
+
+// ✅ PREFIRA: Early returns
+function Component() {
+  if (!condition1) return null;
+  if (!condition2) return null;
+  if (!condition3) return null;
+  
+  return <div>...</div>;
+}
+```
+
+### 11. Separação de Lógica
+```typescript
+// ❌ EVITE: Lógica misturada com UI
+function Component() {
+  const [state, setState] = useState();
+  const handleClick = () => { /* lógica complexa */ };
+  const validate = () => { /* validação complexa */ };
+  
+  return <div>...</div>;
+}
+
+// ✅ PREFIRA: Hook customizado + componente limpo
+function useComponentLogic() {
+  const [state, setState] = useState();
+  const handleClick = () => { /* lógica complexa */ };
+  const validate = () => { /* validação complexa */ };
+  
+  return { state, handleClick, validate };
+}
+
+function Component() {
+  const { state, handleClick, validate } = useComponentLogic();
+  return <div>...</div>;
+}
+```
+
+### 12. Configuração vs Arrays
+```typescript
+// ❌ EVITE: Arrays com .map complexo
+const items = [
+  { key: "a", label: t('key'), icon: Icon },
+  // ... mais items
+].map(item => <Component key={item.key} {...item} />);
+
+// ✅ PREFIRA: Objetos de configuração
+const config = {
+  formatted: { label: t('formatted'), icon: FileText },
+  raw: { label: t('raw'), icon: Code },
+  tree: { label: t('tree'), icon: Eye }
+} as const;
+
+return Object.entries(config).map(([key, { label, icon: Icon }]) => (
+  <Button key={key} onClick={() => setMode(key)}>
+    <Icon />
+    {label}
+  </Button>
+));
+```
+
+### 13. Tipagem Segura
+- ✅ **Use `as const`** para objetos de configuração
+- ✅ **Evite `unknown` em JSX** - sempre force para `ReactNode`
+- ✅ **Use tipos específicos** ao invés de `any`
+- ✅ **Valide props** com TypeScript strict mode 
+
+## Internacionalização (i18n)
+
+### 14. Regras de Tradução Obrigatórias
+- ✅ **SEMPRE adicione traduções** ao criar novos módulos/features
+- ✅ **Use chaves descritivas** e hierárquicas: `feature.section.element`
+- ✅ **Mantenha consistência** entre português e inglês
+- ✅ **Traduza TODOS os textos** visíveis ao usuário
+
+### 15. Estrutura de Traduções
+```json
+{
+  "featureName": {
+    "title": "Título da Feature",
+    "subtitle": "Subtítulo descritivo",
+    "input": {
+      "title": "Título da Entrada",
+      "description": "Descrição da entrada",
+      "placeholder": "Placeholder do input"
+    },
+    "output": {
+      "title": "Título da Saída",
+      "description": "Descrição da saída"
+    },
+    "validation": {
+      "valid": "Válido",
+      "invalid": "Inválido",
+      "errors": "Erros de Validação"
+    }
+  }
+}
+```
+
+### 16. Padrões de Tradução
+- **Navegação**: `navigation.featureName`
+- **Títulos**: `featureName.title`
+- **Subtítulos**: `featureName.subtitle`
+- **Entrada**: `featureName.input.*`
+- **Saída**: `featureName.output.*`
+- **Validação**: `featureName.validation.*`
+- **Ações**: `featureName.actions.*`
+
+### 17. Workflow de Tradução
+1. **Criar feature** → Adicionar traduções em `pt.json` e `en.json`
+2. **Usar `useTranslation()`** em todos os componentes
+3. **Testar ambos idiomas** antes de finalizar
+4. **Manter sincronizados** os arquivos de tradução
+
+### 18. Exemplo de Implementação
+```typescript
+// ✅ CORRETO: Usar traduções
+function Feature() {
+  const { t } = useTranslation();
+  
+  return (
+    <div>
+      <h1>{t('featureName.title')}</h1>
+      <p>{t('featureName.subtitle')}</p>
+      <input placeholder={t('featureName.input.placeholder')} />
+    </div>
+  );
+}
+``` 
