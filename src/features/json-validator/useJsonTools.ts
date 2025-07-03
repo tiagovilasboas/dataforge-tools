@@ -1,21 +1,7 @@
 import { useState, useCallback } from "react";
-import { z } from "zod";
-import { useTranslation } from "react-i18next";
-import JSON5 from "json5";
-
-// Schema genérico para JSON
-const jsonSchema = z.any();
-
-export interface JsonToolsState {
-  input: string;
-  parsedJson: unknown;
-  errors: string[];
-  isValid: boolean;
-  isFormatted: boolean;
-  viewMode: "raw" | "formatted" | "tree";
-  searchTerm: string;
-  collapsedPaths: Set<string>;
-}
+import { JsonValidationService } from "./services/jsonValidationService";
+import { JsonStateService, type JsonToolsState } from "./services/jsonStateService";
+import { JsonUtilsService } from "./services/jsonUtilsService";
 
 export interface JsonToolsActions {
   setInput: (input: string) => void;
@@ -33,275 +19,81 @@ export interface JsonToolsActions {
 }
 
 export function useJsonTools() {
-  const { t } = useTranslation();
-  const [state, setState] = useState<JsonToolsState>({
-    input: "",
-    parsedJson: null,
-    errors: [],
-    isValid: false,
-    isFormatted: false,
-    viewMode: "formatted",
-    searchTerm: "",
-    collapsedPaths: new Set()
-  });
+  const [state, setState] = useState<JsonToolsState>(JsonStateService.createInitialState());
 
+  // Ações de input
   const setInput = useCallback((input: string) => {
-    setState(prev => ({ ...prev, input }));
+    setState(prev => JsonStateService.updateInput(prev, input));
   }, []);
 
+  // Ações de validação
   const validate = useCallback(() => {
-    if (!state.input.trim()) {
-      setState(prev => ({
-        ...prev,
-        errors: ["Digite um JSON para validar"],
-        isValid: false,
-        parsedJson: null
-      }));
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(state.input);
-      jsonSchema.parse(parsed);
-      
-      setState(prev => ({
-        ...prev,
-        parsedJson: parsed,
-        errors: [],
-        isValid: true,
-        isFormatted: false
-      }));
-    } catch (e) {
-      if (e instanceof SyntaxError) {
-        setState(prev => ({
-          ...prev,
-          errors: [`Erro de sintaxe: ${e.message}`],
-          isValid: false,
-          parsedJson: null
-        }));
-      } else if (e instanceof z.ZodError) {
-        setState(prev => ({
-          ...prev,
-          errors: e.errors.map((err) => `${err.path.join(".")} → ${err.message}`),
-          isValid: false,
-          parsedJson: null
-        }));
-      } else {
-        setState(prev => ({
-          ...prev,
-          errors: ["Erro desconhecido na validação"],
-          isValid: false,
-          parsedJson: null
-        }));
-      }
-    }
+    const validationResult = JsonValidationService.validate(state.input);
+    setState(prev => JsonStateService.updateWithValidation(prev, validationResult));
   }, [state.input]);
 
+  // Ações de formatação
   const format = useCallback(() => {
-    if (!state.input.trim()) return;
-
-    try {
-      // Usar JSON5 para parsing mais tolerante
-      const parsed = JSON5.parse(state.input);
-      const formatted = JSON.stringify(parsed, null, 2);
-      
-      setState(prev => ({
-        ...prev,
-        input: formatted,
-        isFormatted: true,
-        parsedJson: parsed,
-        errors: [],
-        isValid: true
-      }));
-    } catch {
-      // Se JSON5 não conseguir, tenta com a função de auto-correção manual
-      try {
-        const correctedInput = autoCorrectJson(state.input);
-        const parsed = JSON.parse(correctedInput);
-        const formatted = JSON.stringify(parsed, null, 2);
-        
-        setState(prev => ({
-          ...prev,
-          input: formatted,
-          isFormatted: true,
-          parsedJson: parsed,
-          errors: [],
-          isValid: true
-        }));
-      } catch {
-        // Se não conseguir corrigir, mantém o input original
-        setState(prev => ({
-          ...prev,
-          errors: [t('jsonTools.validation.autoCorrectFailed')],
-          isValid: false
-        }));
-      }
-    }
-  }, [state.input, t]);
-
-  // Função de auto-correção manual como fallback
-  const autoCorrectJson = (input: string): string => {
-    let corrected = input;
-    
-    // 1. Remover comentários
-    corrected = corrected.replace(/\/\/.*$/gm, '');
-    corrected = corrected.replace(/\/\*[\s\S]*?\*\//g, '');
-    
-    // 2. Corrigir aspas simples para duplas
-    corrected = corrected.replace(/'/g, '"');
-    
-    // 3. Remover vírgulas trailing
-    corrected = corrected.replace(/,\s*]/g, ']');
-    corrected = corrected.replace(/,\s*}/g, '}');
-    
-    // 4. Corrigir números com múltiplos pontos decimais
-    corrected = corrected.replace(/(\d+)\.(\d+)\.(\d+)/g, '$1.$2$3');
-    
-    // 5. Corrigir strings não fechadas que terminam com vírgula
-    corrected = corrected.replace(/"([^"]*?),(?=\s*[}\]])/g, '"$1",');
-    
-    // 6. Limpar espaços extras
-    corrected = corrected.replace(/\s+,/g, ',');
-    
-    // 7. Corrigir strings que terminam com quebra de linha
-    corrected = corrected.replace(/"([^"]*?)\n/g, '"$1"\n');
-    
-    return corrected;
-  };
+    const formatResult = JsonValidationService.format(state.input);
+    setState(prev => JsonStateService.updateWithFormat(prev, formatResult));
+  }, [state.input]);
 
   const minify = useCallback(() => {
-    if (!state.input.trim()) return;
-
-    try {
-      const parsed = JSON.parse(state.input);
-      const minified = JSON.stringify(parsed);
-      
-      setState(prev => ({
-        ...prev,
-        input: minified,
-        isFormatted: false
-      }));
-    } catch {
-      // Se não conseguir minificar, mantém o input original
-    }
+    const minifyResult = JsonValidationService.minify(state.input);
+    setState(prev => JsonStateService.updateWithMinify(prev, minifyResult));
   }, [state.input]);
 
+  // Ações de visualização
   const setViewMode = useCallback((mode: "raw" | "formatted" | "tree") => {
-    setState(prev => ({ ...prev, viewMode: mode }));
+    setState(prev => JsonStateService.updateViewMode(prev, mode));
   }, []);
 
   const setSearchTerm = useCallback((term: string) => {
-    setState(prev => ({ ...prev, searchTerm: term }));
+    setState(prev => JsonStateService.updateSearchTerm(prev, term));
   }, []);
 
+  // Ações de colapso
   const toggleCollapse = useCallback((path: string) => {
-    setState(prev => {
-      const newCollapsedPaths = new Set(prev.collapsedPaths);
-      if (newCollapsedPaths.has(path)) {
-        newCollapsedPaths.delete(path);
-      } else {
-        newCollapsedPaths.add(path);
-      }
-      return { ...prev, collapsedPaths: newCollapsedPaths };
-    });
+    setState(prev => JsonStateService.toggleCollapse(prev, path));
   }, []);
 
   const collapseAll = useCallback(() => {
-    if (!state.parsedJson) return;
-    
-    const paths = getAllPaths(state.parsedJson);
-    setState(prev => ({
-      ...prev,
-      collapsedPaths: new Set(paths)
-    }));
-  }, [state.parsedJson]);
-
-  const expandAll = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      collapsedPaths: new Set()
-    }));
+    setState(prev => JsonStateService.collapseAll(prev));
   }, []);
 
+  const expandAll = useCallback(() => {
+    setState(prev => JsonStateService.expandAll(prev));
+  }, []);
+
+  // Ações de utilitários
   const copyToClipboard = useCallback(async () => {
-    if (!state.input.trim()) return;
-    
-    try {
-      await navigator.clipboard.writeText(state.input);
-    } catch {
-      // Fallback para navegadores mais antigos
-      const textArea = document.createElement("textarea");
-      textArea.value = state.input;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
+    const success = await JsonUtilsService.copyToClipboard(state.input);
+    if (success) {
+      // Aqui poderia mostrar uma notificação de sucesso
+      console.log('Copiado para clipboard');
     }
   }, [state.input]);
 
   const clear = useCallback(() => {
-    setState({
-      input: "",
-      parsedJson: null,
-      errors: [],
-      isValid: false,
-      isFormatted: false,
-      viewMode: "formatted",
-      searchTerm: "",
-      collapsedPaths: new Set()
-    });
+    setState(JsonStateService.clear());
   }, []);
 
   const loadSample = useCallback(() => {
-    // JSON correto para demonstrar formatação
-    const correctJson = `{
-  "app": {
-    "name": "DataForge Tools",
-    "version": "1.0.0",
-    "description": "Suite completa de ferramentas para desenvolvedores",
-    "features": [
-      "JSON Validator",
-      "CSV Validator", 
-      "JWT Decoder",
-      "Regex Tester",
-      "Mock Generator"
-    ],
-    "config": {
-      "autoSave": true,
-      "notifications": {
-        "enabled": true,
-        "sound": false
-      }
-    },
-    "metadata": {
-      "created": "2024-01-15",
-      "author": "Tiago Vilas Boas",
-      "tags": ["tools", "developer", "validation", "json", "csv"],
-      "repository": "https://github.com/tiagovilasboas/dataforge-tools",
-      "license": "MIT"
-    },
-    "stats": {
-      "users": 1000,
-      "downloads": 5000,
-      "stars": 150
-    }
-  }
-}`;
-
-    setState(prev => ({
-      ...prev,
-      input: correctJson,
-      parsedJson: null,
-      errors: [],
-      isValid: false,
-      isFormatted: false,
-      searchTerm: "",
-      collapsedPaths: new Set()
-    }));
+    setState(prev => JsonStateService.loadSample(prev));
   }, []);
 
+  // Dados filtrados por busca
+  const filteredJson = JsonUtilsService.filterJsonBySearch(state.parsedJson, state.searchTerm);
+
+  // Estatísticas do JSON
+  const jsonStats = state.parsedJson ? JsonUtilsService.getJsonStats(state.parsedJson) : null;
+
   return {
-    state,
+    state: {
+      ...state,
+      filteredJson,
+      jsonStats
+    },
     actions: {
       setInput,
       validate,
@@ -317,23 +109,4 @@ export function useJsonTools() {
       loadSample
     }
   };
-}
-
-// Função auxiliar para obter todos os caminhos de um objeto
-function getAllPaths(obj: unknown, prefix = ""): string[] {
-  const paths: string[] = [];
-  
-  if (obj && typeof obj === "object" && !Array.isArray(obj)) {
-    for (const key in obj) {
-      const path = prefix ? `${prefix}.${key}` : key;
-      paths.push(path);
-      
-      const value = (obj as Record<string, unknown>)[key];
-      if (value && typeof value === "object" && !Array.isArray(value)) {
-        paths.push(...getAllPaths(value, path));
-      }
-    }
-  }
-  
-  return paths;
 } 
