@@ -1,0 +1,309 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "add": "Adicionar",
+    "search": "Pesquisar",
+    "filter": "Filtrar",
+    "clear": "Limpar",
+    "copy": "Copiar",
+    "export": "Exportar",
+    "import": "Importar",
+    "download": "Baixar",
+    "upload": "Enviar",
+    "validate": "Validar",
+    "format": "Formatar",
+    "minify": "Minificar",
+    "sample": "Exemplo",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "close": "Fechar",
+    "open": "Abrir",
+    "settings": "Configurações",
+    "language": "Idioma"
+  },
+  "navigation": {
+    "overview": "Visão Geral",
+    "jsonTools": "JSON Viewer",
+    "svgConverter": "SVG Converter",
+    "csvTools": "CSV Viewer",
+    "jwtDecoder": "JWT Decoder",
+    "regexTester": "Regex Tester",
+    "mockGenerator": "Mock Generator"
+  },
+  "home": {
+    "title": "DataForge Tools",
+    "subtitle": "Suite completa de ferramentas para desenvolvedores",
+    "description": "Valide, teste e manipule dados com ferramentas profissionais. Desenvolvido para otimizar seu fluxo de trabalho e garantir qualidade em seus projetos.",
+    "features": {
+      "jsonTools": {
+        "title": "JSON Viewer",
+        "description": "Valide, visualize e manipule seus dados JSON com formatação e busca"
+      },
+      "csvTools": {
+        "title": "CSV Viewer",
+        "description": "Valide, visualize e manipule seus dados CSV com tabelas e busca"
+      },
+      "jwtDecoder": {
+        "title": "JWT Decoder",
+        "description": "Decodifique e analise tokens JWT de forma segura"
+      },
+      "regexTester": {
+        "title": "Regex Tester",
+        "description": "Teste e refine suas expressões regulares em tempo real"
+      },
+      "mockGenerator": {
+        "title": "Mock Generator",
+        "description": "Gere dados falsos realistas para seus testes"
+      },
+      "svgConverter": {
+        "title": "SVG Converter",
+        "description": "Converta SVGs em componentes React otimizados"
+      }
+    },
+    "benefits": {
+      "title": "Por que escolher DataForge Tools?",
+      "items": [
+        "Interface moderna e intuitiva",
+        "Validação em tempo real",
+        "Feedback detalhado de erros",
+        "Suporte a múltiplos formatos",
+        "Gratuito e código aberto",
+        "Sem necessidade de registro"
+      ]
+    },
+    "cta": {
+      "title": "Comece agora!",
+      "description": "Não perca tempo com ferramentas complexas. DataForge Tools é simples, rápido e eficiente.",
+      "jsonButton": "JSON Viewer",
+      "csvButton": "CSV Viewer"
+    },
+    "author": {
+      "message": "Desenvolvido com amor de dev para dev",
+      "author": "Autor:",
+      "name": "Tiago Vilas Boas"
+    },
+    "stats": {
+      "users": "1000+ usuários",
+      "openSource": "Código Aberto",
+      "alwaysOnline": "Sempre online"
+    }
+  },
+  "jsonTools": {
+    "title": "JSON Viewer",
+    "subtitle": "Valide, visualize e manipule seus dados JSON",
+    "input": {
+      "title": "Entrada JSON",
+      "description": "Cole ou digite seu JSON aqui",
+      "placeholder": "{\"exemplo\": \"dados JSON\"}",
+      "validate": "Validar",
+      "format": "Formatar",
+      "minify": "Minificar",
+      "copy": "Copiar",
+      "sample": "Exemplo",
+      "clear": "Limpar"
+    },
+    "output": {
+      "title": "Visualização",
+      "description": "Visualize seu JSON de diferentes formas",
+      "formatted": "Formatado",
+      "raw": "Bruto",
+      "tree": "Árvore",
+      "search": "Buscar no JSON...",
+      "expandAll": "Expandir Tudo",
+      "collapseAll": "Recolher Tudo"
+    },
+    "validation": {
+      "valid": "JSON Válido",
+      "invalid": "JSON Inválido",
+      "formatted": "Formatado",
+      "errors": "Erros de Validação",
+      "autoCorrectFailed": "Não foi possível corrigir automaticamente o JSON. Verifique os erros manualmente."
+    }
+  },
+  "csvTools": {
+    "title": "CSV Viewer",
+    "subtitle": "Valide, visualize e manipule seus dados CSV",
+    "input": {
+      "title": "Entrada CSV",
+      "description": "Cole ou digite seu CSV aqui",
+      "placeholder": "nome,email,idade\nJoão,joao@email.com,28\nMaria,maria@email.com,32",
+      "validate": "Validar",
+      "copy": "Copiar",
+      "sample": "Exemplo",
+      "clear": "Limpar",
+      "upload": {
+        "upload": "Upload",
+        "limits": "Limites: 5MB, 50k linhas, 50 colunas"
+      }
+    },
+    "output": {
+      "title": "Visualização",
+      "description": "Visualize seu CSV de diferentes formas",
+      "table": "Tabela",
+      "raw": "Bruto",
+      "grid": "Grade",
+      "search": "Buscar no CSV...",
+      "columns": "Colunas:",
+      "exportCsv": "Exportar CSV",
+      "exportJson": "Exportar JSON"
+    },
+    "validation": {
+      "valid": "CSV Válido",
+      "invalid": "CSV Inválido",
+      "rows": "linhas",
+      "columns": "colunas",
+      "errors": "Erros de Validação"
+    },
+    "pagination": {
+      "showing": "Mostrando",
+      "to": "até",
+      "of": "de",
+      "results": "resultados",
+      "perPage": "por página",
+      "previous": "Anterior",
+      "next": "Próximo"
+    }
+  },
+  "jwtDecoder": {
+    "title": "JWT Decoder",
+    "subtitle": "Decodifique e analise tokens JWT de forma segura",
+    "input": {
+      "title": "Token JWT",
+      "description": "Cole seu token JWT aqui para decodificação",
+      "placeholder": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    },
+    "output": {
+      "title": "Token Decodificado",
+      "description": "Visualize o conteúdo do seu token JWT",
+      "header": "Header",
+      "payload": "Payload",
+      "signature": "Assinatura"
+    },
+    "validation": {
+      "valid": "Token Válido",
+      "invalid": "Token Inválido"
+    },
+    "actions": {
+      "decode": "Decodificar",
+      "loadSample": "Carregar Exemplo",
+      "clear": "Limpar"
+    }
+  },
+  "svgConverter": {
+    "title": "SVG to React Component",
+    "subtitle": "Converta SVGs em componentes React otimizados e reutilizáveis",
+    "input": {
+      "title": "Entrada SVG",
+      "description": "Cole seu código SVG aqui para converter em componente React",
+      "svgCode": "Código SVG",
+      "placeholder": "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\">...</svg>",
+      "loadSample": "Carregar Exemplo"
+    },
+    "settings": {
+      "title": "Configurações do Componente",
+      "description": "Configure como o componente React será gerado",
+      "componentName": "Nome do Componente",
+      "defaultSize": "Tamanho Padrão",
+      "defaultColor": "Cor Padrão",
+      "includeProps": "Incluir Props (size, color)",
+      "includeClassName": "Incluir className prop",
+      "optimizeSvg": "Otimizar SVG (remover comentários, espaços)",
+      "advanced": {
+        "title": "Configurações Avançadas",
+        "useTypeScript": "Usar TypeScript (.tsx)",
+        "useNamedExport": "Export nomeado (export function)",
+        "removeViewBox": "Remover viewBox",
+        "removeDimensions": "Remover width/height",
+        "removeFill": "Remover atributos fill",
+        "removeStroke": "Remover atributos stroke",
+        "useMemo": "Usar React.memo",
+        "useForwardRef": "Usar forwardRef"
+      }
+    },
+    "validation": {
+      "valid": "SVG Válido",
+      "invalid": "SVG Inválido"
+    },
+    "output": {
+      "title": "Componente React",
+      "description": "Seu componente React otimizado e pronto para uso",
+      "copy": "Copiar Código"
+    },
+    "actions": {
+      "generate": "Gerar Componente"
+    }
+  },
+  "mockGenerator": {
+    "title": "Mock Generator",
+    "subtitle": "Gere dados falsos realistas para seus testes",
+    "config": {
+      "title": "Configuração",
+      "description": "Configure os campos e tipos de dados para gerar",
+      "count": "Quantidade",
+      "format": "Formato",
+      "fields": "Campos"
+    },
+    "output": {
+      "title": "Dados Gerados",
+      "description": "Visualize os dados gerados",
+      "empty": "Clique em 'Gerar' para criar dados falsos",
+      "records": "registros"
+    },
+    "actions": {
+      "generate": "Gerar Dados",
+      "addField": "Adicionar Campo",
+      "loadSample": "Carregar Exemplo",
+      "copy": "Copiar",
+      "download": "Baixar"
+    }
+  },
+  "regexTester": {
+    "title": "Regex Tester",
+    "subtitle": "Teste e refine suas expressões regulares em tempo real",
+    "input": {
+      "title": "Expressão Regular",
+      "description": "Digite sua regex e texto de teste",
+      "pattern": "Padrão",
+      "flags": "Flags",
+      "testString": "Texto de Teste",
+      "testStringPlaceholder": "Digite o texto para testar a regex...",
+      "replaceString": "Substituição",
+      "replaceStringPlaceholder": "Texto para substituir os matches...",
+      "examples": "Exemplos"
+    },
+    "output": {
+      "title": "Resultados",
+      "description": "Visualize os matches e substituições",
+      "empty": "Digite uma regex e clique em 'Testar'",
+      "matches": "matches",
+      "index": "Índice",
+      "groups": "Grupos",
+      "replacement": "Substituição"
+    },
+    "validation": {
+      "valid": "Regex Válido",
+      "invalid": "Regex Inválido"
+    },
+    "actions": {
+      "test": "Testar",
+      "clear": "Limpar"
+    },
+    "examples": {
+      "basic": "Básico",
+      "email": "Email",
+      "phone": "Telefone",
+      "date": "Data",
+      "url": "URL"
+    }
+  },
+  "languages": {
+    "en": "English",
+    "pt": "Português"
+  }
+} 
