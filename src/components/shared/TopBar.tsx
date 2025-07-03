@@ -5,12 +5,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from "@/components/ui/button";
-import { DinoGame } from "./DinoGame";
+import { RobotGame } from "./RobotGame";
 
 export function TopBar() {
   const location = useLocation();
   const { t } = useTranslation();
-  const [isDinoGameVisible, setIsDinoGameVisible] = React.useState(false);
+  const [isRobotGameVisible, setIsRobotGameVisible] = React.useState(false);
 
   const menuItems = [
     {
@@ -115,9 +115,9 @@ export function TopBar() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setIsDinoGameVisible(!isDinoGameVisible)}
+            onClick={() => setIsRobotGameVisible(!isRobotGameVisible)}
             className="flex items-center gap-1"
-            title="Dino Game"
+            title="Robot Game"
           >
             <Gamepad2 className="w-4 h-4" />
           </Button>
@@ -125,9 +125,9 @@ export function TopBar() {
         </div>
       </div>
 
-      {/* Dino Game */}
-      <DinoGame 
-        isVisible={isDinoGameVisible} 
+      {/* Robot Game */}
+      <RobotGame 
+        isVisible={isRobotGameVisible} 
       />
     </>
   );
