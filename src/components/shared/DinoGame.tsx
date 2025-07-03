@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 interface DinoGameProps {
   isVisible: boolean;
-  onToggle: () => void;
 }
 
 interface DinoState {
@@ -12,130 +11,26 @@ interface DinoState {
   isJumping: boolean;
   isRunning: boolean;
   direction: 1 | -1;
-  targetModule: string | null;
+  targetElement: string | null;
 }
 
-interface Module {
-  id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  name: string;
-}
-
-const DINO_SIZE = 40;
+const DINO_SIZE = 60;
 const GRAVITY = 0.8;
 const JUMP_FORCE = -15;
-const GROUND_Y = 60;
-const RUN_SPEED = 2;
+const RUN_SPEED = 3;
 
-export function DinoGame({ isVisible, onToggle }: DinoGameProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+export function DinoGame({ isVisible }: DinoGameProps) {
+  const dinoRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>();
   const [dino, setDino] = useState<DinoState>({
-    x: 50,
-    y: GROUND_Y,
+    x: 100,
+    y: window.innerHeight - 100,
     velocityY: 0,
     isJumping: false,
     isRunning: true,
     direction: 1,
-    targetModule: null
+    targetElement: null
   });
-  const modules: Module[] = [
-    { id: 'json', x: 200, y: 100, width: 120, height: 80, name: 'JSON' },
-    { id: 'csv', x: 400, y: 100, width: 120, height: 80, name: 'CSV' },
-    { id: 'jwt', x: 600, y: 100, width: 120, height: 80, name: 'JWT' },
-    { id: 'mock', x: 200, y: 250, width: 120, height: 80, name: 'Mock' },
-    { id: 'regex', x: 400, y: 250, width: 120, height: 80, name: 'Regex' },
-    { id: 'svg', x: 600, y: 250, width: 120, height: 80, name: 'SVG' }
-  ];
-
-  // Função para desenhar o dinossauro
-  const drawDino = useCallback((ctx: CanvasRenderingContext2D, dino: DinoState) => {
-    ctx.save();
-    ctx.translate(dino.x, dino.y);
-    ctx.scale(dino.direction, 1);
-
-    // Corpo do dino
-    ctx.fillStyle = '#2d3748';
-    ctx.fillRect(0, 0, DINO_SIZE, DINO_SIZE);
-
-    // Olhos
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(8, 8, 6, 6);
-    ctx.fillRect(26, 8, 6, 6);
-    
-    // Pupilas
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(10, 10, 2, 2);
-    ctx.fillRect(28, 10, 2, 2);
-
-    // Boca
-    ctx.fillStyle = '#e53e3e';
-    ctx.fillRect(12, 25, 16, 4);
-
-    // Pernas (animação de corrida)
-    ctx.fillStyle = '#2d3748';
-    const legOffset = dino.isRunning ? Math.sin(Date.now() * 0.01) * 3 : 0;
-    ctx.fillRect(8, DINO_SIZE, 4, 12 + legOffset);
-    ctx.fillRect(28, DINO_SIZE, 4, 12 - legOffset);
-
-    // Cauda
-    ctx.fillStyle = '#4a5568';
-    ctx.fillRect(-8, 8, 8, 6);
-
-    ctx.restore();
-  }, []);
-
-  // Função para desenhar os módulos
-  const drawModules = useCallback((ctx: CanvasRenderingContext2D) => {
-    modules.forEach(module => {
-      // Card do módulo
-      ctx.fillStyle = '#f7fafc';
-      ctx.strokeStyle = '#e2e8f0';
-      ctx.lineWidth = 2;
-      ctx.fillRect(module.x, module.y, module.width, module.height);
-      ctx.strokeRect(module.x, module.y, module.width, module.height);
-
-      // Nome do módulo
-      ctx.fillStyle = '#2d3748';
-      ctx.font = '14px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(module.name, module.x + module.width / 2, module.y + module.height / 2 + 5);
-
-      // Ícone pequeno
-      ctx.fillStyle = '#4299e1';
-      ctx.fillRect(module.x + 10, module.y + 10, 20, 20);
-    });
-  }, [modules]);
-
-  // Função para verificar colisão
-  const checkCollision = useCallback((dino: DinoState, module: Module) => {
-    return dino.x < module.x + module.width &&
-           dino.x + DINO_SIZE > module.x &&
-           dino.y < module.y + module.height &&
-           dino.y + DINO_SIZE > module.y;
-  }, []);
-
-  // Função para encontrar módulo mais próximo
-  const findNearestModule = useCallback((dino: DinoState) => {
-    let nearest = null;
-    let minDistance = Infinity;
-
-    modules.forEach(module => {
-      const distance = Math.sqrt(
-        Math.pow(dino.x - (module.x + module.width / 2), 2) +
-        Math.pow(dino.y - (module.y + module.height / 2), 2)
-      );
-      if (distance < minDistance) {
-        minDistance = distance;
-        nearest = module.id;
-      }
-    });
-
-    return nearest;
-  }, [modules]);
 
   // Função para pular
   const jump = useCallback(() => {
@@ -146,9 +41,52 @@ export function DinoGame({ isVisible, onToggle }: DinoGameProps) {
     }));
   }, []);
 
-  // Função para mover em direção ao módulo
-  const moveTowardsModule = useCallback((dino: DinoState, targetId: string) => {
-    const target = modules.find(m => m.id === targetId);
+  // Função para encontrar elementos da página
+  const findPageElements = useCallback(() => {
+    const elements = document.querySelectorAll('a[href], button, .card, [role="button"]');
+    const pageElements: Array<{ id: string; x: number; y: number; width: number; height: number; text: string }> = [];
+    
+    elements.forEach((el, index) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        pageElements.push({
+          id: `element-${index}`,
+          x: rect.left + window.scrollX,
+          y: rect.top + window.scrollY,
+          width: rect.width,
+          height: rect.height,
+          text: el.textContent?.trim() || ''
+        });
+      }
+    });
+    
+    return pageElements;
+  }, []);
+
+  // Função para encontrar elemento mais próximo
+  const findNearestElement = useCallback((dino: DinoState) => {
+    const elements = findPageElements();
+    let nearest = null;
+    let minDistance = Infinity;
+
+    elements.forEach(element => {
+      const distance = Math.sqrt(
+        Math.pow(dino.x - (element.x + element.width / 2), 2) +
+        Math.pow(dino.y - (element.y + element.height / 2), 2)
+      );
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearest = element.id;
+      }
+    });
+
+    return nearest;
+  }, [findPageElements]);
+
+  // Função para mover em direção ao elemento
+  const moveTowardsElement = useCallback((dino: DinoState, targetId: string) => {
+    const elements = findPageElements();
+    const target = elements.find(e => e.id === targetId);
     if (!target) return dino;
 
     const targetX = target.x + target.width / 2;
@@ -159,7 +97,7 @@ export function DinoGame({ isVisible, onToggle }: DinoGameProps) {
     
     const distance = Math.sqrt(dx * dx + dy * dy);
     
-    if (distance > 5) {
+    if (distance > 10) {
       const newX = dino.x + (dx / distance) * RUN_SPEED;
       const newDirection = dx > 0 ? 1 : -1;
       
@@ -171,20 +109,22 @@ export function DinoGame({ isVisible, onToggle }: DinoGameProps) {
     }
     
     return dino;
-  }, [modules]);
+  }, [findPageElements]);
+
+  // Função para verificar colisão
+  const checkCollision = useCallback((dino: DinoState, targetId: string) => {
+    const elements = findPageElements();
+    const target = elements.find(e => e.id === targetId);
+    if (!target) return false;
+
+    return dino.x < target.x + target.width &&
+           dino.x + DINO_SIZE > target.x &&
+           dino.y < target.y + target.height &&
+           dino.y + DINO_SIZE > target.y;
+  }, [findPageElements]);
 
   // Loop principal da animação
   const gameLoop = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Limpar canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Atualizar estado do dino
     setDino(prev => {
       let newDino = { ...prev };
 
@@ -193,34 +133,35 @@ export function DinoGame({ isVisible, onToggle }: DinoGameProps) {
       newDino.y += newDino.velocityY;
 
       // Verificar colisão com o chão
-      if (newDino.y >= GROUND_Y) {
-        newDino.y = GROUND_Y;
+      const currentGroundY = window.innerHeight - 100;
+      if (newDino.y >= currentGroundY) {
+        newDino.y = currentGroundY;
         newDino.velocityY = 0;
         newDino.isJumping = false;
       }
 
       // Lógica de movimento inteligente
-      if (!newDino.targetModule) {
-        newDino.targetModule = findNearestModule(newDino);
+      if (!newDino.targetElement) {
+        newDino.targetElement = findNearestElement(newDino);
       }
 
-      if (newDino.targetModule) {
-        newDino = moveTowardsModule(newDino, newDino.targetModule);
+      if (newDino.targetElement) {
+        newDino = moveTowardsElement(newDino, newDino.targetElement);
         
-        // Verificar se chegou ao módulo
-        const target = modules.find(m => m.id === newDino.targetModule);
-        if (target && checkCollision(newDino, target)) {
-          // Pular quando chegar ao módulo
+        // Verificar se chegou ao elemento
+        if (checkCollision(newDino, newDino.targetElement)) {
+          // Pular quando chegar ao elemento
           if (!newDino.isJumping) {
             newDino.velocityY = JUMP_FORCE;
             newDino.isJumping = true;
           }
           
-          // Escolher próximo módulo aleatoriamente
-          const availableModules = modules.filter(m => m.id !== newDino.targetModule);
-          if (availableModules.length > 0) {
-            const randomModule = availableModules[Math.floor(Math.random() * availableModules.length)];
-            newDino.targetModule = randomModule.id;
+          // Escolher próximo elemento aleatoriamente
+          const elements = findPageElements();
+          const availableElements = elements.filter(e => e.id !== newDino.targetElement);
+          if (availableElements.length > 0) {
+            const randomElement = availableElements[Math.floor(Math.random() * availableElements.length)];
+            newDino.targetElement = randomElement.id;
           }
         }
       }
@@ -228,13 +169,9 @@ export function DinoGame({ isVisible, onToggle }: DinoGameProps) {
       return newDino;
     });
 
-    // Desenhar elementos
-    drawModules(ctx);
-    drawDino(ctx, dino);
-
     // Continuar loop
     animationRef.current = requestAnimationFrame(gameLoop);
-  }, [dino, modules, drawDino, drawModules, findNearestModule, moveTowardsModule, checkCollision]);
+  }, [findNearestElement, moveTowardsElement, checkCollision, findPageElements]);
 
   // Iniciar/parar animação
   useEffect(() => {
@@ -263,20 +200,17 @@ export function DinoGame({ isVisible, onToggle }: DinoGameProps) {
     };
 
     const handleClick = (e: MouseEvent) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
+      const elements = findPageElements();
+      const clickX = e.clientX + window.scrollX;
+      const clickY = e.clientY + window.scrollY;
 
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      // Verificar se clicou em algum módulo
-      modules.forEach(module => {
-        if (x >= module.x && x <= module.x + module.width &&
-            y >= module.y && y <= module.y + module.height) {
+      // Verificar se clicou em algum elemento
+      elements.forEach(element => {
+        if (clickX >= element.x && clickX <= element.x + element.width &&
+            clickY >= element.y && clickY <= element.y + element.height) {
           setDino(prev => ({
             ...prev,
-            targetModule: module.id
+            targetElement: element.id
           }));
         }
       });
@@ -284,38 +218,67 @@ export function DinoGame({ isVisible, onToggle }: DinoGameProps) {
 
     if (isVisible) {
       document.addEventListener('keydown', handleKeyPress);
-      canvasRef.current?.addEventListener('click', handleClick);
+      document.addEventListener('click', handleClick);
     }
 
     return () => {
       document.removeEventListener('keydown', handleKeyPress);
-      canvasRef.current?.removeEventListener('click', handleClick);
+      document.removeEventListener('click', handleClick);
     };
-  }, [isVisible, modules, jump]);
+  }, [isVisible, findPageElements, jump]);
 
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <div className="bg-white rounded-lg shadow-lg p-4 border">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-gray-700">Dino Game 🦖</h3>
-          <button
-            onClick={onToggle}
-            className="text-gray-500 hover:text-gray-700 text-sm"
-          >
-            ✕
-          </button>
+    <div
+      ref={dinoRef}
+      className="fixed z-50 pointer-events-none select-none"
+      style={{
+        left: `${dino.x}px`,
+        top: `${dino.y}px`,
+        transform: `scaleX(${dino.direction})`,
+        transition: 'transform 0.1s ease'
+      }}
+    >
+      {/* Dinossauro */}
+      <div className="relative">
+        {/* Corpo */}
+        <div className="w-15 h-15 bg-gray-800 rounded-lg relative">
+          {/* Olhos */}
+          <div className="absolute top-2 left-2 w-3 h-3 bg-white rounded-full">
+            <div className="absolute top-0.5 left-0.5 w-1 h-1 bg-black rounded-full"></div>
+          </div>
+          <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full">
+            <div className="absolute top-0.5 right-0.5 w-1 h-1 bg-black rounded-full"></div>
+          </div>
+          
+          {/* Boca */}
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-red-500 rounded"></div>
+          
+          {/* Pernas animadas */}
+          <div 
+            className={`absolute -bottom-3 left-2 w-1 h-3 bg-gray-800 rounded ${
+              dino.isRunning ? 'animate-bounce' : ''
+            }`}
+            style={{
+              animationDelay: '0ms'
+            }}
+          ></div>
+          <div 
+            className={`absolute -bottom-3 right-2 w-1 h-3 bg-gray-800 rounded ${
+              dino.isRunning ? 'animate-bounce' : ''
+            }`}
+            style={{
+              animationDelay: '150ms'
+            }}
+          ></div>
+          
+          {/* Cauda */}
+          <div className="absolute top-2 -left-2 w-2 h-1.5 bg-gray-600 rounded-l-full"></div>
         </div>
-        <canvas
-          ref={canvasRef}
-          width={800}
-          height={400}
-          className="border border-gray-200 rounded"
-        />
-        <div className="text-xs text-gray-500 mt-2">
-          Clique nos módulos ou pressione ESPAÇO para pular!
-        </div>
+        
+        {/* Sombra */}
+        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-black opacity-20 rounded-full"></div>
       </div>
     </div>
   );

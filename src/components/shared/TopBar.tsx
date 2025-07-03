@@ -128,7 +128,6 @@ export function TopBar() {
       {/* Dino Game */}
       <DinoGame 
         isVisible={isDinoGameVisible} 
-        onToggle={() => setIsDinoGameVisible(false)} 
       />
     </>
   );
