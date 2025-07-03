@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { ZodError } from "zod";
-import { mockConfigSchema, type MockConfig, type MockResult, type FieldConfig } from "./schema";
+import { mockConfigSchema, type MockConfig, type MockResult, type FieldConfig, dataTypes } from "./schema";
 import { generateValue } from "./generators";
 
 export function useMockGenerator() {
@@ -133,6 +133,7 @@ export function useMockGenerator() {
     updateField,
     loadSample,
     copyToClipboard,
-    downloadData
+    downloadData,
+    dataTypes
   };
 } 
