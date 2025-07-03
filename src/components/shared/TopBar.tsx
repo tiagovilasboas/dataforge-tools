@@ -42,7 +42,7 @@ export function TopBar() {
   ];
 
   return (
-    <div className="sticky top-0 z-50 flex h-12 items-center bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="sticky top-0 z-50 flex h-12 items-center justify-between bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       {/* Hambúrguer à esquerda em mobile */}
       <div className="flex items-center md:hidden mr-2">
         <Sheet>
@@ -75,7 +75,7 @@ export function TopBar() {
       </div>
 
       {/* Logo centralizado em mobile, à esquerda em desktop */}
-      <div className="flex flex-1 items-center justify-center md:justify-start">
+      <div className="flex flex-1 md:flex-none items-center justify-center md:justify-start">
         <Link
           to="/"
           className="flex items-center gap-2 text-base font-bold hover:text-primary transition-colors"
@@ -86,7 +86,7 @@ export function TopBar() {
       </div>
 
       {/* Menu normal em md+ */}
-      <div className="hidden md:flex flex-1 items-center justify-center gap-2">
+      <div className="hidden md:flex items-center justify-center gap-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;

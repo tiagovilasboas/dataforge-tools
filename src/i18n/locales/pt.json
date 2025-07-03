@@ -299,7 +299,16 @@
       "email": "Email",
       "phone": "Telefone",
       "date": "Data",
-      "url": "URL"
+      "url": "URL",
+      "cpf": "CPF",
+      "cep": "CEP",
+      "time": "Hora",
+      "ip": "IP",
+      "creditCard": "Cartão",
+      "htmlTag": "HTML Tag",
+      "camelCase": "CamelCase",
+      "snakeCase": "SnakeCase",
+      "hexColor": "Cor Hex"
     }
   },
   "languages": {

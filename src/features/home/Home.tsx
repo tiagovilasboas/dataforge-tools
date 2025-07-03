@@ -122,9 +122,9 @@ export function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col justify-center">
       {/* Hero Section */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 flex-1 flex flex-col justify-center">
         <div className="text-center max-w-4xl mx-auto mb-12 sm:mb-16 lg:mb-20">
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="p-3 rounded-full bg-primary/10">

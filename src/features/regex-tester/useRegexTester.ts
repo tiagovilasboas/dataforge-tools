@@ -1,6 +1,18 @@
 import { useState, useCallback } from "react";
 import { ZodError } from "zod";
-import { regexConfigSchema, type RegexConfig, type RegexResult } from "./schema";
+import { regexConfigSchema, type RegexConfig } from "./schema";
+import { regexExamples, getExampleByName } from "./examples";
+
+export interface RegexResult {
+  isValid: boolean;
+  matches: Array<{
+    match: string;
+    index: number;
+    groups?: string[];
+  }>;
+  replacement?: string;
+  error?: string;
+}
 
 export function useRegexTester() {
   const [config, setConfig] = useState<RegexConfig>({
@@ -13,49 +25,43 @@ export function useRegexTester() {
   const [errors, setErrors] = useState<string[]>([]);
 
   const testRegex = useCallback(() => {
-    if (!config.pattern.trim()) {
-      setErrors(["Padrão regex é obrigatório"]);
-      setResult(null);
-      return;
-    }
-
     try {
       // Valida configuração
       regexConfigSchema.parse(config);
       
-      // Cria regex
+      if (!config.pattern.trim()) {
+        setResult(null);
+        setErrors([]);
+        return;
+      }
+
       const regex = new RegExp(config.pattern, config.flags);
-      
-      // Testa matches
       const matches: RegexResult['matches'] = [];
-      let match;
       
-      if (config.testString) {
-        while ((match = regex.exec(config.testString)) !== null) {
-          matches.push({
-            match: match[0],
-            index: match.index,
-            groups: match.slice(1)
-          });
-          
-          // Evita loop infinito se não há flag global
-          if (!config.flags.includes('g')) break;
-        }
+      // Encontra matches
+      let match;
+      while ((match = regex.exec(config.testString)) !== null) {
+        matches.push({
+          match: match[0],
+          index: match.index,
+          groups: match.slice(1)
+        });
+        
+        // Evita loop infinito se não há flag global
+        if (!config.flags.includes('g')) break;
       }
 
-      // Testa substituição
-      let replaceResult: string | undefined;
-      if (config.testString && config.replaceString) {
-        replaceResult = config.testString.replace(regex, config.replaceString);
+      // Faz substituição se especificado
+      let replacement: string | undefined;
+      if (config.replaceString && config.testString) {
+        replacement = config.testString.replace(regex, config.replaceString);
       }
 
-      const regexResult: RegexResult = {
+      setResult({
         isValid: true,
         matches,
-        replaceResult
-      };
-
-      setResult(regexResult);
+        replacement
+      });
       setErrors([]);
     } catch (e) {
       if (e instanceof ZodError) {
@@ -74,148 +80,83 @@ export function useRegexTester() {
     setErrors([]);
   }, []);
 
-  const loadSample = useCallback(() => {
-    setConfig({
-      pattern: "\\b\\w+@\\w+\\.\\w+\\b",
-      flags: "g",
-      testString: "Contate-nos em john@example.com ou maria@test.org para mais informações.",
-      replaceString: "[EMAIL]"
-    });
+  const loadExample = useCallback((exampleName: string) => {
+    const example = getExampleByName(exampleName);
+    if (example) {
+      setConfig(example.config);
+    }
   }, []);
+
+  const loadSample = useCallback(() => {
+    loadExample('basic');
+  }, [loadExample]);
 
   const loadEmailSample = useCallback(() => {
-    setConfig({
-      pattern: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b",
-      flags: "g",
-      testString: "Emails: john.doe@example.com, maria@test.org, contato@empresa.com.br, user123@gmail.com",
-      replaceString: "[EMAIL]"
-    });
-  }, []);
+    loadExample('email');
+  }, [loadExample]);
 
   const loadPhoneSample = useCallback(() => {
-    setConfig({
-      pattern: "\\(\\d{2}\\) \\d{4,5}-\\d{4}",
-      flags: "g",
-      testString: "Telefones: (11) 99999-9999, (21) 8888-8888, (31) 77777-7777, (41) 3333-3333",
-      replaceString: "[PHONE]"
-    });
-  }, []);
+    loadExample('phone');
+  }, [loadExample]);
 
   const loadDateSample = useCallback(() => {
-    setConfig({
-      pattern: "\\d{2}/\\d{2}/\\d{4}",
-      flags: "g",
-      testString: "Datas: 25/12/2023, 01/01/2024, 15/03/2024, 30/06/2024",
-      replaceString: "[DATE]"
-    });
-  }, []);
+    loadExample('date');
+  }, [loadExample]);
 
   const loadUrlSample = useCallback(() => {
-    setConfig({
-      pattern: "https?://[^\\s]+",
-      flags: "g",
-      testString: "Links: https://example.com, http://test.org, https://github.com/user/repo",
-      replaceString: "[URL]"
-    });
-  }, []);
+    loadExample('url');
+  }, [loadExample]);
 
   const loadWordSample = useCallback(() => {
-    setConfig({
-      pattern: "\\b\\w{4,}\\b",
-      flags: "g",
-      testString: "Encontre palavras com 4 ou mais letras neste texto de exemplo.",
-      replaceString: "[WORD]"
-    });
-  }, []);
+    loadExample('basic');
+  }, [loadExample]);
 
   const loadNumberSample = useCallback(() => {
-    setConfig({
-      pattern: "\\b\\d+\\b",
-      flags: "g",
-      testString: "Números: 123, 456, 789, 42, 1000, 999",
-      replaceString: "[NUMBER]"
-    });
-  }, []);
+    loadExample('basic');
+  }, [loadExample]);
 
   const loadCpfSample = useCallback(() => {
-    setConfig({
-      pattern: "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}",
-      flags: "g",
-      testString: "CPFs: 123.456.789-00, 987.654.321-11, 111.222.333-44",
-      replaceString: "[CPF]"
-    });
-  }, []);
+    loadExample('cpf');
+  }, [loadExample]);
 
   const loadCepSample = useCallback(() => {
-    setConfig({
-      pattern: "\\d{5}-\\d{3}",
-      flags: "g",
-      testString: "CEPs: 12345-678, 98765-432, 11111-222",
-      replaceString: "[CEP]"
-    });
-  }, []);
+    loadExample('cep');
+  }, [loadExample]);
 
   const loadTimeSample = useCallback(() => {
-    setConfig({
-      pattern: "\\d{2}:\\d{2}(:\\d{2})?",
-      flags: "g",
-      testString: "Horários: 14:30, 09:15, 23:45:30, 12:00",
-      replaceString: "[TIME]"
-    });
-  }, []);
+    loadExample('time');
+  }, [loadExample]);
 
   const loadIpSample = useCallback(() => {
-    setConfig({
-      pattern: "\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b",
-      flags: "g",
-      testString: "IPs: 192.168.1.1, 10.0.0.1, 172.16.0.1, 8.8.8.8",
-      replaceString: "[IP]"
-    });
-  }, []);
+    loadExample('ip');
+  }, [loadExample]);
 
   const loadCreditCardSample = useCallback(() => {
-    setConfig({
-      pattern: "\\b\\d{4}[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{4}\\b",
-      flags: "g",
-      testString: "Cartões: 1234-5678-9012-3456, 9876 5432 1098 7654",
-      replaceString: "[CARD]"
-    });
-  }, []);
+    loadExample('creditCard');
+  }, [loadExample]);
 
   const loadHtmlTagSample = useCallback(() => {
-    setConfig({
-      pattern: "<[^>]+>",
-      flags: "g",
-      testString: "HTML: <div>conteúdo</div>, <p>texto</p>, <span class='test'>teste</span>",
-      replaceString: "[TAG]"
-    });
-  }, []);
+    loadExample('htmlTag');
+  }, [loadExample]);
 
   const loadCamelCaseSample = useCallback(() => {
-    setConfig({
-      pattern: "\\b[a-z]+(?:[A-Z][a-z]+)*\\b",
-      flags: "g",
-      testString: "CamelCase: userName, firstName, lastName, emailAddress, phoneNumber",
-      replaceString: "[CAMEL]"
-    });
-  }, []);
+    loadExample('camelCase');
+  }, [loadExample]);
 
   const loadSnakeCaseSample = useCallback(() => {
-    setConfig({
-      pattern: "\\b[a-z]+(?:_[a-z]+)*\\b",
-      flags: "g",
-      testString: "snake_case: user_name, first_name, last_name, email_address, phone_number",
-      replaceString: "[SNAKE]"
-    });
-  }, []);
+    loadExample('snakeCase');
+  }, [loadExample]);
 
   const loadHexColorSample = useCallback(() => {
-    setConfig({
-      pattern: "#[0-9A-Fa-f]{6}",
-      flags: "g",
-      testString: "Cores: #FF0000, #00FF00, #0000FF, #FFFFFF, #123456",
-      replaceString: "[COLOR]"
-    });
+    loadExample('hexColor');
+  }, [loadExample]);
+
+  const copyToClipboard = useCallback(async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
+    }
   }, []);
 
   return {
@@ -240,6 +181,8 @@ export function useRegexTester() {
     loadHtmlTagSample,
     loadCamelCaseSample,
     loadSnakeCaseSample,
-    loadHexColorSample
+    loadHexColorSample,
+    copyToClipboard,
+    examples: regexExamples
   };
 } 
