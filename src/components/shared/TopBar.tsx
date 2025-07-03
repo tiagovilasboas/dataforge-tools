@@ -6,11 +6,13 @@ import { useTranslation } from 'react-i18next';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from "@/components/ui/button";
 import { RobotGame } from "./RobotGame";
+import { useIntentionalPreload } from "@/hooks/usePreload";
 
 export function TopBar() {
   const location = useLocation();
   const { t } = useTranslation();
   const [isRobotGameVisible, setIsRobotGameVisible] = React.useState(false);
+  const { handleLinkHover, handleLinkFocus } = useIntentionalPreload();
 
   const menuItems = [
     {
@@ -65,6 +67,8 @@ export function TopBar() {
                     <Link
                       key={item.path}
                       to={item.path}
+                      onMouseEnter={() => handleLinkHover(item.path)}
+                      onFocus={() => handleLinkFocus(item.path)}
                       className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors ${
                         isActive ? 'bg-primary text-primary-foreground' : 'text-foreground dark:text-foreground'
                       }`}
@@ -99,6 +103,8 @@ export function TopBar() {
               <Link
                 key={item.path}
                 to={item.path}
+                onMouseEnter={() => handleLinkHover(item.path)}
+                onFocus={() => handleLinkFocus(item.path)}
                 className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-md hover:bg-muted transition-colors ${
                   isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
                 }`}
