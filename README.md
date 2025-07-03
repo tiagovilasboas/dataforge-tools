@@ -1,108 +1,204 @@
-# DataForge Tools
+# DataForge Tools 🛠️
 
-DataForge Tools é uma suíte de ferramentas para validação, conversão e manipulação de dados, construída com foco em produtividade, boas práticas de arquitetura e experiência do usuário. O projeto utiliza React, TypeScript, Vite, Tailwind CSS, Shadcn UI e Zod para validação.
+Este é um **exercício de código pessoal** onde reuni todas as ferramentas que mais utilizo no dia a dia como desenvolvedor em uma única aplicação web. O objetivo foi praticar boas práticas de arquitetura, separação de responsabilidades (SRP) e criar uma interface unificada para essas ferramentas essenciais.
 
-## ✨ Funcionalidades
-- **Validador de JSON**
-- **Validador de CSV**
-- **Decodificador de JWT**
-- **Gerador de Mock (dados fictícios)**
-- **Testador de Regex**
-- **Conversor de SVG**
+## ✨ Ferramentas Incluídas
+
+- **Validador de JSON** - Validação e formatação de JSON
+- **Validador de CSV** - Validação e preview de dados CSV
+- **Decodificador de JWT** - Decodificação e validação de tokens JWT
+- **Gerador de Mock** - Geração de dados fictícios para testes
+- **Testador de Regex** - Teste e validação de expressões regulares
+- **Conversor de SVG** - Conversão de SVG para componentes React
 
 ## 🚀 Tecnologias Utilizadas
-- React + TypeScript
-- Vite
-- Tailwind CSS
-- Shadcn UI
-- Zod (validação)
-- React Router
-- next-themes (tema)
-- Internacionalização (i18n) com arquivos `pt.json` e `en.json`
+
+- **React + TypeScript** - Interface moderna e tipagem segura
+- **Vite** - Build tool rápido e eficiente
+- **Tailwind CSS** - Estilização utilitária
+- **Shadcn UI** - Componentes de interface consistentes
+- **Zod** - Validação de schemas
+- **React Router** - Navegação entre ferramentas
+- **next-themes** - Suporte a temas claro/escuro
+- **i18n** - Internacionalização (PT/EN)
 
 ## 🏗️ Arquitetura & Boas Práticas
 
 ### Separação de Responsabilidades (SRP)
-Cada módulo em `src/features/` segue o padrão:
+Cada módulo segue o padrão de 3 arquivos:
 
 ```
 src/features/nome-do-modulo/
-├── schema.ts          # Schemas Zod
-├── useFeature.ts      # Hook de lógica
-└── Feature.tsx        # Componente UI
+├── schema.ts          # Schemas Zod para validação
+├── useFeature.ts      # Hook customizado com lógica de negócio
+└── Feature.tsx        # Componente focado apenas na UI
 ```
 
-- **schema.ts**: Schemas de validação com Zod
-- **useFeature.ts**: Hook customizado para lógica de estado e validação
-- **Feature.tsx**: Componente principal responsável apenas pela UI
-
-### Padrões de Código
-- Tipagem explícita, sem `any`
-- Tratamento de erros com `instanceof ZodError`
-- Lógica separada da UI
-- Hooks customizados para estado complexo
-- Componentes pequenos e focados
-- Early returns para evitar aninhamento
-- Objetos de configuração ao invés de `.map` complexo
-- Traduções obrigatórias para todo texto visível
-
-#### Exemplo de Hook
+### Exemplo de Implementação
 ```typescript
+// schema.ts - Validação
+export const featureSchema = z.object({
+  input: z.string().min(1, "Campo obrigatório"),
+  // ... outros campos
+});
+
+// useFeature.ts - Lógica
 export function useFeature() {
   const [input, setInput] = useState("");
   const [errors, setErrors] = useState<string[]>([]);
-  const [valid, setValid] = useState(false);
-
+  
   const validate = () => {
     try {
-      const parsed = JSON.parse(input);
-      featureSchema.parse(parsed);
-      setValid(true);
+      featureSchema.parse({ input });
       setErrors([]);
     } catch (e) {
       if (e instanceof ZodError) {
-        setErrors(e.errors.map((err) => `${err.path.join(".")} → ${err.message}`));
+        setErrors(e.errors.map(err => `${err.path.join(".")} → ${err.message}`));
       }
     }
   };
+  
+  return { input, setInput, errors, validate };
+}
 
-  return { input, setInput, errors, valid, validate };
+// Feature.tsx - UI
+export function Feature() {
+  const { input, setInput, errors, validate } = useFeature();
+  
+  return (
+    <div>
+      <Input value={input} onChange={(e) => setInput(e.target.value)} />
+      {errors.map(error => <p key={error}>{error}</p>)}
+      <Button onClick={validate}>Validar</Button>
+    </div>
+  );
 }
 ```
 
-### Internacionalização (i18n)
-- Traduções em `src/i18n/locales/pt.json` e `en.json`
-- Use sempre `useTranslation()` nos componentes
-- Chaves descritivas e hierárquicas
+## 📁 Estrutura do Projeto
 
-## 📁 Estrutura de Pastas
 ```
 src/
-  components/      # Componentes compartilhados e UI (Shadcn)
-  contexts/        # Contextos globais
-  features/        # Cada ferramenta isolada por SRP
-  hooks/           # Hooks customizados
-  i18n/            # Internacionalização
-  lib/             # Utilitários e temas
-  styles/          # Temas e CSS
+├── components/
+│   ├── ui/           # Componentes Shadcn UI
+│   └── shared/       # Componentes compartilhados (TopBar, LanguageSwitch)
+├── features/         # Módulos das ferramentas
+│   ├── json-validator/
+│   ├── csv-validator/
+│   ├── jwt-decoder/
+│   ├── mock-generator/
+│   ├── regex-tester/
+│   └── svg-converter/
+├── hooks/            # Hooks customizados
+├── i18n/             # Internacionalização
+├── lib/              # Utilitários e configurações
+└── styles/           # Estilos e temas
 ```
 
-## 🛠️ Como rodar o projeto
+## 🎯 Objetivos do Exercício
+
+### **Aprendizado Técnico**
+- ✅ Praticar **SRP** (Single Responsibility Principle)
+- ✅ Separar lógica de negócio da UI
+- ✅ Usar **hooks customizados** para estado complexo
+- ✅ Implementar **validação robusta** com Zod
+- ✅ Criar **componentes reutilizáveis**
+- ✅ Aplicar **tipagem TypeScript** rigorosa
+
+### **Organização de Código**
+- ✅ **Estrutura modular** por feature
+- ✅ **Schemas centralizados** para validação
+- ✅ **Traduções organizadas** e consistentes
+- ✅ **Componentes pequenos** e focados
+- ✅ **Early returns** para reduzir aninhamento
+
+### **Experiência do Usuário**
+- ✅ **Interface unificada** para todas as ferramentas
+- ✅ **Tema claro/escuro** automático
+- ✅ **Suporte a idiomas** (PT/EN)
+- ✅ **Responsividade** completa
+- ✅ **Feedback visual** claro
+
+## 🚀 Como Executar
+
 ```bash
+# Instalar dependências
 pnpm install
+
+# Executar em desenvolvimento
 pnpm dev
+
+# Build para produção
+pnpm build
+
+# Preview da build
+pnpm preview
 ```
-Acesse: http://localhost:5173 (ou porta sugerida pelo Vite)
 
-## 🤝 Como contribuir
-1. Crie uma branch: `git checkout -b minha-feature`
-2. Siga o padrão de módulos e traduções
-3. Faça commits descritivos
-4. Abra um Pull Request
+## 🛠️ Ferramentas Incluídas
 
-## 📜 Licença
-MIT
+### **JSON Validator**
+- Validação de sintaxe JSON
+- Formatação automática
+- Highlighting de erros
+- Exemplos práticos
+
+### **CSV Validator**
+- Validação de estrutura CSV
+- Preview de dados
+- Detecção de problemas
+- Estatísticas do arquivo
+
+### **JWT Decoder**
+- Decodificação de tokens JWT
+- Validação de assinatura
+- Visualização de payload
+- Informações do header
+
+### **Mock Generator**
+- Geração de dados fictícios
+- Múltiplos tipos de dados
+- Configuração flexível
+- Export em JSON/CSV
+
+### **Regex Tester**
+- Teste de expressões regulares
+- Exemplos pré-definidos
+- Highlighting de matches
+- Substituição de texto
+
+### **SVG Converter**
+- Conversão SVG → React
+- Configurações avançadas
+- Preview em tempo real
+- Otimização automática
+
+## 📚 Aprendizados
+
+Este exercício me permitiu:
+
+1. **Praticar arquitetura limpa** com separação clara de responsabilidades
+2. **Melhorar organização de código** com padrões consistentes
+3. **Aplicar TypeScript rigoroso** com tipagem explícita
+4. **Criar componentes reutilizáveis** seguindo SRP
+5. **Implementar validação robusta** com tratamento de erros
+6. **Organizar traduções** de forma escalável
+7. **Criar interface unificada** para múltiplas ferramentas
+
+## 🤝 Contribuição
+
+Este é um projeto pessoal de exercício, mas sugestões e melhorias são bem-vindas! Se quiser contribuir:
+
+1. Fork o projeto
+2. Crie uma branch para sua feature
+3. Commit suas mudanças
+4. Push para a branch
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto é um exercício pessoal de código. Sinta-se livre para usar como referência ou inspiração para seus próprios projetos.
 
 ---
 
-> Projeto criado por Tiago Vilas Boas e colaboradores. Sinta-se livre para sugerir melhorias!
+**Desenvolvido como exercício de código para praticar boas práticas de arquitetura e organização de código.** 🎯
